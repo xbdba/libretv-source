@@ -1,6 +1,12 @@
 name: Update LibreTV sources
 
 on:
+  push:
+    paths:
+      - '.github/workflows/update-sources.yml'
+      - 'config/sources.json'
+      - 'scripts/**'
+      - 'tests/**'
   schedule:
     - cron: '17 19 * * *'
   workflow_dispatch:
@@ -15,7 +21,7 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,20 +31,22 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Test parser
+      - name: Test reviewed-source policy
         run: npm test
 
-      - name: Build and probe sources
+      - name: Build and probe reviewed sources
         run: npm run build
 
       - name: Validate generated subscription
         run: |
           node --input-type=module -e "
             import fs from 'node:fs';
+            const cfg = JSON.parse(fs.readFileSync('config/sources.json', 'utf8'));
             const data = JSON.parse(fs.readFileSync('dist/libretv-sources.json', 'utf8'));
             if (data.version !== 2) throw new Error('version must be 2');
-            if (!Array.isArray(data.sources) || data.sources.length < 8) throw new Error('not enough vod sources');
-            if (!Array.isArray(data.liveSources)) throw new Error('liveSources must be an array');
+            if (data.quality?.selectionMode !== 'reviewed-only') throw new Error('quality mode must be reviewed-only');
+            if (!Array.isArray(data.sources) || data.sources.length < cfg.minSources) throw new Error('not enough reviewed vod sources');
+            if (!Array.isArray(data.liveSources) || data.liveSources.length < cfg.minLiveSources) throw new Error('not enough reviewed live sources');
             console.log('vod=' + data.sources.length + ' live=' + data.liveSources.length);
           "
 

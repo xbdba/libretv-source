@@ -1,104 +1,111 @@
 {
-  "name": "LibreTV 自维护源清单",
+  "name": "LibreTV 人工审核源清单",
   "outputPath": "dist/libretv-sources.json",
   "testKeywords": [
-    "庆余年",
-    "流浪地球"
+    "繁花",
+    "狂飙",
+    "流浪地球2"
   ],
   "minKeywordPasses": 1,
-  "minSources": 8,
-  "maxSources": 30,
-  "maxLiveSources": 8,
-  "minLiveChannels": 10,
-  "concurrency": 8,
+  "minSources": 2,
+  "maxSources": 10,
+  "minLiveSources": 2,
+  "maxLiveSources": 6,
+  "concurrency": 5,
   "upstreamTimeoutMs": 20000,
-  "probeTimeoutMs": 10000,
+  "probeTimeoutMs": 12000,
   "probeRetries": 1,
-  "liveTimeoutMs": 25000,
+  "liveTimeoutMs": 30000,
   "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0 Safari/537.36",
-  "upstreams": [
-    "https://cdn.jsdelivr.net/gh/erxuw196/libretv-sources@main/libretv-sources.json",
-    "https://cdn.jsdelivr.net/gh/haojun19980728-prog/libretv-source-list@main/libretv-sources.json",
-    "https://lubin776.github.io/tvbox-api-backup/tvbox/%E6%B5%B7%E9%87%8F%E9%87%87%E9%9B%86%E8%81%9A%E5%90%88%E6%8E%A5%E5%8F%A3.json",
-    "https://raw.githubusercontent.com/WDXwang/maccms-source-checker/main/output/tvbox.json",
-    "https://raw.githubusercontent.com/andywe0921-ops/applecms-sources/master/applecms_sources.json"
-  ],
-  "blockedHosts": [
-    "fqzy.me",
-    "api.ddapi.cc",
-    "lbapi9.com"
-  ],
-  "seedSources": [
-    {
-      "name": "非凡资源",
-      "url": "https://api.ffzyapi.com/api.php/provide/vod"
-    },
-    {
-      "name": "红牛资源",
-      "url": "https://www.hongniuzy2.com/api.php/provide/vod"
-    },
-    {
-      "name": "豪华资源",
-      "url": "https://hhzyapi.com/api.php/provide/vod"
-    },
-    {
-      "name": "360资源",
-      "url": "https://360zy.com/api.php/provide/vod"
-    },
-    {
-      "name": "魔都资源",
-      "url": "https://caiji.moduapi.cc/api.php/provide/vod"
-    },
-    {
-      "name": "巨量资源",
-      "url": "https://api.juliang.live/api/provide/vod"
-    },
-    {
-      "name": "无尽资源",
-      "url": "https://api.wujinapi.com/api.php/provide/vod"
-    },
-    {
-      "name": "速播资源",
-      "url": "https://subocj.com/api.php/provide/vod"
-    },
-    {
-      "name": "U酷88",
-      "url": "https://api.ukuapi88.com/api.php/provide/vod"
-    },
-    {
-      "name": "猫眼资源",
-      "url": "https://api.maoyanapi.top/api.php/provide/vod"
-    },
-    {
-      "name": "秒播资源",
-      "url": "https://api.zeqaht.com/api.php/provide/vod"
-    },
+  "reviewPolicy": {
+    "selectionMode": "reviewed-only",
+    "visualReviewRequired": true,
+    "reviewedAt": "2026-11-21",
+    "minimumVideoWidth": 720,
+    "watermarkPolicy": "Reject third-party domains, promotional overlays, app logos, and broadcaster logos added by the source.",
+    "reviewMethod": "Capture representative playback frames from each catalog and inspect multiple titles and timestamps. New sources must be added manually after review."
+  },
+  "reviewedSources": [
     {
       "name": "暴风2",
-      "url": "https://bfzy2.tv/api.php/provide/vod"
+      "url": "https://bfzy2.tv/api.php/provide/vod",
+      "review": {
+        "titles": [
+          "狂飙",
+          "流浪地球2"
+        ],
+        "resolutions": [
+          "1920x1080",
+          "1280x536"
+        ],
+        "watermark": "none-observed"
+      }
     },
     {
-      "name": "qlys资源",
-      "url": "https://www.qlys.cc/api.php/provide/vod"
+      "name": "如意资源",
+      "url": "https://cj.rycjapi.com/api.php/provide/vod",
+      "review": {
+        "titles": [
+          "繁花",
+          "流浪地球2"
+        ],
+        "resolutions": [
+          "1080x606",
+          "1920x800"
+        ],
+        "watermark": "none-observed"
+      }
     },
     {
-      "name": "非凡备用",
-      "url": "http://ffzy5.tv/api.php/provide/vod"
+      "name": "非凡直连",
+      "url": "https://cj.ffzyapi.com/api.php/provide/vod",
+      "review": {
+        "titles": [
+          "繁花",
+          "狂飙"
+        ],
+        "resolutions": [
+          "1280x720",
+          "1920x1080"
+        ],
+        "watermark": "none-observed"
+      }
     },
     {
-      "name": "红牛备用",
-      "url": "https://www.hongniuzy3.com/api.php/provide/vod"
+      "name": "虎牙资源",
+      "url": "https://www.huyaapi.com/api.php/provide/vod",
+      "review": {
+        "titles": [
+          "流浪地球2"
+        ],
+        "resolutions": [
+          "1920x804"
+        ],
+        "watermark": "none-observed"
+      }
     },
     {
-      "name": "魔都备用",
-      "url": "https://www.mdzyapi.com/api.php/provide/vod"
-    },
-    {
-      "name": "百度资源",
-      "url": "http://api.apibdzy.com/api.php/provide/vod"
+      "name": "电影天堂资源",
+      "url": "https://caiji.dyttzyapi.com/api.php/provide/vod",
+      "review": {
+        "titles": [
+          "繁花",
+          "狂飙"
+        ],
+        "resolutions": [
+          "1080x606",
+          "1920x1080"
+        ],
+        "watermark": "none-observed"
+      }
     }
   ],
-  "seedLiveSources": [
+  "reviewedLiveSources": [
+    {
+      "name": "Guovin 聚合",
+      "url": "https://raw.githubusercontent.com/Guovin/iptv-api/gd/output/result.m3u",
+      "epg": "http://epg.51zmt.top:8000/e.xml.gz"
+    },
     {
       "name": "IPTV-org 中国",
       "url": "https://iptv-org.github.io/iptv/countries/cn.m3u",
@@ -110,21 +117,14 @@
       "epg": "http://epg.51zmt.top:8000/e.xml.gz"
     },
     {
-      "name": "Guovin 聚合",
-      "url": "https://raw.githubusercontent.com/Guovin/iptv-api/gd/output/result.m3u",
-      "epg": "http://epg.51zmt.top:8000/e.xml.gz"
-    },
-    {
       "name": "vbskycn 备用",
       "url": "https://raw.githubusercontent.com/vbskycn/iptv/master/tv/iptv4.m3u",
       "epg": "http://epg.51zmt.top:8000/e.xml.gz"
-    },
-    {
-      "name": "LibreTV 直播聚合",
-      "url": "https://raw.githubusercontent.com/erxuw196/libretv-sources/main/live/merged.m3u",
-      "epg": "http://epg.51zmt.top:8000/e.xml.gz"
     }
   ],
-  "maxSourcesPerHost": 1,
-  "maxLiveSourcesPerHost": 1
+  "blockedHosts": [
+    "fqzy.me",
+    "api.ddapi.cc",
+    "lbapi9.com"
+  ]
 }

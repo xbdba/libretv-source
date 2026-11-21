@@ -1,115 +1,87 @@
-# LibreTV 自动维护源清单
+# LibreTV 人工审核源清单
 
-这个目录把多个公开源集合聚合成一份标准的 **LibreTV-SourceList JSON**，并每天自动实测、更新。
-
-生成的 `dist/libretv-sources.json` 同时包含：
-
-```json
-{
-  "name": "LibreTV 自维护源清单",
-  "version": 2,
-  "sources": [
-    { "name": "点播源", "url": "https://example.com/api.php/provide/vod" }
-  ],
-  "liveSources": [
-    { "name": "直播源", "url": "https://example.com/list.m3u", "epg": "http://example.com/epg.xml.gz" }
-  ]
-}
-```
-
-- `sources`：Apple CMS 点播接口；
-- `liveSources`：M3U 直播列表，`epg` 可选。
-
-## 为什么不能直接挂载本地 JSON
-
-LibreTV 的 `DEFAULT_SUBSCRIPTIONS` 只接受 **公网 HTTP/HTTPS URL**。源码中的订阅拉取会经过 SSRF 校验，因此下面这些都不能直接使用：
-
-- `file:///data/libretv-sources.json`
-- `http://127.0.0.1/...`
-- `http://192.168.x.x/...`
-- Docker 内部服务名，例如 `http://source-server/...`
-
-所以推荐让 GitHub Actions 每天生成文件，LibreTV 订阅文件的公开 URL。不需要在群晖上手工维护，也不需要重启 LibreTV 容器。
-
-## 部署方式
-
-1. 把整个目录上传到一个公开 GitHub 仓库，仓库中保留下面的目录结构：
-
-```text
-.github/workflows/update-sources.yml
-config/sources.json
-scripts/update-sources.mjs
-scripts/lib/source-tools.mjs
-dist/libretv-sources.json
-package.json
-docker-compose.example.yml
-```
-
-2. 打开仓库的 **Actions → Update LibreTV sources → Run workflow**，先手动跑一次。
-
-3. 本项目的 `docker-compose.example.yml` 已经指向 `xbdba/libretv-source`，把它合入现有的 LibreTV Compose 即可。
-
-4. 首次部署时重建一次 LibreTV：
-
-```bash
-docker compose up -d --force-recreate
-```
-
-之后每天 GitHub Actions 会重新生成 `dist/libretv-sources.json`。LibreTV 会在打开站点时按 `refreshDays: 1` 自动拉取，不需要再次重启容器。
-
-推荐订阅地址：
+这个仓库每天自动检测一组 **已人工审核** 的 LibreTV 点播源和直播源，并生成标准订阅文件：
 
 ```text
 https://fastly.jsdelivr.net/gh/xbdba/libretv-source@main/dist/libretv-sources.json
 ```
 
-备用地址：
-
-```text
-https://gcore.jsdelivr.net/gh/xbdba/libretv-source@main/dist/libretv-sources.json
-https://raw.githubusercontent.com/xbdba/libretv-source/main/dist/libretv-sources.json
-```
-
-国内网络下优先使用 Fastly jsDelivr；如果 Fastly 不可达，再切换 Gcore 或 Raw。
-
-## 工作方式
-
-1. 读取 `config/sources.json` 中的上游订阅、TVBOX 配置和种子源；
-2. 支持 LibreTV-SourceList、裸源数组、接口目录、TVBOX 单仓配置；
-3. 按 URL 去重，并按主机名限制重复接口数量；
-4. 对每个点播源搜索“庆余年”和“流浪地球”；
-5. 只保留满足以下条件的源：
-   - HTTP 成功；
-   - 返回可解析 JSON；
-   - `list` 非空；
-   - 结果带 `vod_play_url`；
-   - 至少一条结果与关键词相关；
-6. 探测直播 M3U 的 `#EXTINF` 数量；
-7. 根据通过次数、可播结果数量稳定排序，截断到配置上限；
-8. 写入 `dist/libretv-sources.json`。
-
-如果通过测活的点播源少于 `minSources`，脚本会直接失败，不覆盖上一次可用的文件。
-
-## 主要配置
+生成的 `dist/libretv-sources.json` 同时包含：
 
 ```json
 {
-  "testKeywords": ["庆余年", "流浪地球"],
-  "minKeywordPasses": 1,
-  "minSources": 8,
-  "maxSources": 30,
-  "maxSourcesPerHost": 1,
-  "maxLiveSources": 8,
-  "concurrency": 8
+  "sources": [
+    { "name": "点播源", "url": "https://example.com/api.php/provide/vod" }
+  ],
+  "liveSources": [
+    { "name": "直播源", "url": "https://example.com/live.m3u", "epg": "https://example.com/epg.xml" }
+  ]
 }
 ```
 
-- `upstreams`：上游公开源清单；
-- `seedSources`：即使上游失败也参与测活的固定候选；
-- `seedLiveSources`：固定直播候选；
-- `blockedHosts`：明确排除的域名；
-- `maxSources`：最终点播源上限，LibreTV 单次搜索最多使用 50 个源；
-- `testKeywords`：建议保留一个剧集关键词和一个电影关键词。
+## 质量控制规则
+
+Actions 不会从公开源仓库自动收录新源。这样做的原因是：自动测活只能证明接口能返回搜索结果，不能证明视频没有第三方水印或广告。
+
+新增点播源必须满足：
+
+1. 实际播放并截取至少两个时间点，检查画面左上、右上、底部和中央叠加层；
+2. 至少抽查两个影片或剧集，且原生宽度不低于 720；
+3. 排除带第三方域名、博彩广告、App 标、频道标或来源平台 Logo 的视频；
+4. 在 `config/sources.json` 的 `reviewedSources` 中写入审核记录后，才会进入正式订阅。
+
+当前白名单中的点播源及抽查记录：
+
+| 源 | 抽查内容 | 原生分辨率 | 第三方水印 |
+| --- | --- | --- | --- |
+| 暴风2 | 狂飙、流浪地球2 | 1080p、1280x536 | 未发现 |
+| 如意资源 | 繁花、流浪地球2 | 1080x606、1920x800 | 未发现 |
+| 非凡直连 | 繁花、狂飙 | 720p、1080p | 未发现 |
+| 虎牙资源 | 流浪地球2 | 1920x804 | 未发现 |
+| 电影天堂资源 | 繁花、狂飙 | 1080p、1920x1080 | 未发现 |
+
+审核时已排除的代表性源包括：
+
+- `69850.com` 叠加广告：豪华资源、速播资源、红牛备用、光速资源、金鹰资源；
+- `448478.com` 叠加大幅博彩广告：魔都备用；
+- `360z.…` 插播广告：360资源；
+- `1802.com` 插播广告：百度资源；
+- `99442.com` 叠加广告：U酷资源；
+- B 站右上角 Logo：量子资源部分影片；
+- `116.am` 插播广告：优质资源部分影片。
+
+这套审核是抽样，不是对所有历史影片的永久保证。上游资源站可以随时替换片源；如果以后发现某源重新出现水印，应把该 URL 从 `reviewedSources` 删除，Actions 就不会再发布它。
+
+直播源保留 Guovin、IPTV-org、vbskycn 等公开维护的聚合列表。直播画面中的电视台台标属于频道自身内容，不按“第三方叠加水印”处理；若直播源插入博彩或推广台标，应直接移除该源。
+
+## GitHub Actions 的工作方式
+
+每天北京时间 **03:17** 执行，也可以手动运行或推送配置变更触发：
+
+1. 读取 `config/sources.json` 中的人工审核白名单；
+2. 用“繁花、狂飙、流浪地球2”测试点播接口；
+3. 探测直播 M3U 的频道数量；
+4. 点播不足 2 个或直播不足 2 个时直接失败，不覆盖上一版文件；
+5. 生成 `dist/libretv-sources.json` 并自动提交。
+
+当前构建网络中可达的点播源才会进入 `dist/libretv-sources.json`；不同地区、运营商和 GitHub Runner 的结果可能不同。点播或直播源失效时，脚本只会从白名单里剔除暂时不可用的项，不会自动加入未经审核的新源。
+
+## LibreTV 配置
+
+```yaml
+services:
+  libretv:
+    image: ghcr.io/librespark/libretv:latest
+    container_name: libretv
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      PASSWORD: ${PASSWORD:?请先设置 PASSWORD}
+      DEFAULT_SUBSCRIPTIONS: '[{"url":"https://fastly.jsdelivr.net/gh/xbdba/libretv-source@main/dist/libretv-sources.json","name":"人工审核源","refreshDays":1}]'
+```
+
+`DEFAULT_SUBSCRIPTIONS` 必须使用公网 HTTP/HTTPS 地址，不能使用本地文件、`127.0.0.1`、局域网 IP 或 Docker 内部服务名。
 
 ## 本地验证
 
@@ -118,10 +90,13 @@ npm test
 npm run build
 ```
 
-`npm test` 覆盖格式解析、TVBOX 提取、URL 归一化和 M3U 解析。`npm run build` 会实际访问网络并重新生成 `dist/libretv-sources.json`。
+`npm test` 会验证白名单策略和审核记录是否完整；`npm run build` 会实际访问网络并重新生成订阅文件。
 
-## 注意事项
+## 备用订阅地址
 
-- GitHub Actions 的运行网络与群晖网络不同，脚本通过不代表 NAS 一定能连上；LibreTV 自带的“一键测活”仍是最终校验。
-- 不要把所有源都长期勾选，建议在 LibreTV 中保留 8～15 个实际可用的点播源。
-- 这些是第三方公开接口，稳定性和内容合法性不由本项目保证；只接入你有权访问的内容。
+```text
+https://gcore.jsdelivr.net/gh/xbdba/libretv-source@main/dist/libretv-sources.json
+https://raw.githubusercontent.com/xbdba/libretv-source/main/dist/libretv-sources.json
+```
+
+这些是第三方公开接口，稳定性和内容合法性不由本项目保证；只接入你有权访问的内容。

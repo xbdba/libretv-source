@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import {
   extractCandidates,
   isBlockedHost,
@@ -79,4 +80,30 @@ https://example.com/2.m3u8
 test('blockedHosts includes subdomains', () => {
   assert.equal(isBlockedHost('https://a.example.com/api', ['example.com']), true);
   assert.equal(isBlockedHost('https://example.net/api', ['example.com']), false);
+});
+
+test('source config is reviewed-only and records visual review evidence', () => {
+  const cfg = JSON.parse(readFileSync(new URL('../config/sources.json', import.meta.url), 'utf8'));
+  assert.equal(cfg.reviewPolicy.selectionMode, 'reviewed-only');
+  assert.equal(cfg.reviewPolicy.visualReviewRequired, true);
+  assert.ok(Array.isArray(cfg.reviewedSources));
+  assert.ok(cfg.reviewedSources.length >= cfg.minSources);
+
+  for (const source of cfg.reviewedSources) {
+    assert.match(source.url, /^https:\/\//);
+    assert.equal(source.review.watermark, 'none-observed');
+    assert.ok(source.review.titles.length > 0);
+    assert.ok(source.review.resolutions.length > 0);
+  }
+
+  assert.equal('upstreams' in cfg, false);
+  assert.equal('seedSources' in cfg, false);
+});
+
+test('automatic publishing cannot import unreviewed candidates', () => {
+  const script = readFileSync(new URL('../scripts/update-sources.mjs', import.meta.url), 'utf8');
+  assert.match(script, /reviewed-only/);
+  assert.match(script, /reviewedSources/);
+  assert.doesNotMatch(script, /fetchUpstream/);
+  assert.doesNotMatch(script, /cfg\.upstreams/);
 });
