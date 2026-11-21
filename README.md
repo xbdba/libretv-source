@@ -57,13 +57,20 @@ docker compose up -d --force-recreate
 
 之后每天 GitHub Actions 会重新生成 `dist/libretv-sources.json`。LibreTV 会在打开站点时按 `refreshDays: 1` 自动拉取，不需要再次重启容器。
 
-Raw 地址也能用：
+推荐订阅地址：
 
 ```text
+https://fastly.jsdelivr.net/gh/xbdba/libretv-source@main/dist/libretv-sources.json
+```
+
+备用地址：
+
+```text
+https://gcore.jsdelivr.net/gh/xbdba/libretv-source@main/dist/libretv-sources.json
 https://raw.githubusercontent.com/xbdba/libretv-source/main/dist/libretv-sources.json
 ```
 
-国内网络下优先使用 Compose 示例里的 jsDelivr 地址。
+国内网络下优先使用 Fastly jsDelivr；如果 Fastly 不可达，再切换 Gcore 或 Raw。
 
 ## 工作方式
 
