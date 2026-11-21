@@ -3,7 +3,7 @@
 这个仓库每天自动检测一组 **已人工审核** 的 LibreTV 点播源和直播源，并生成标准订阅文件：
 
 ```text
-https://ghfast.top/https://raw.githubusercontent.com/xbdba/libretv-source/main/dist/libretv-sources.json
+https://gh-proxy.com/https://raw.githubusercontent.com/xbdba/libretv-source/main/dist/libretv-sources.json
 ```
 
 生成的 `dist/libretv-sources.json` 同时包含：
@@ -78,7 +78,7 @@ services:
       - "8080:8080"
     environment:
       PASSWORD: ${PASSWORD:?请先设置 PASSWORD}
-      DEFAULT_SUBSCRIPTIONS: '[{"url":"https://ghfast.top/https://raw.githubusercontent.com/xbdba/libretv-source/main/dist/libretv-sources.json","name":"人工审核源","refreshDays":1}]'
+      DEFAULT_SUBSCRIPTIONS: '[{"url":"https://gh-proxy.com/https://raw.githubusercontent.com/xbdba/libretv-source/main/dist/libretv-sources.json","name":"人工审核源","refreshDays":1}]'
 ```
 
 `DEFAULT_SUBSCRIPTIONS` 必须使用公网 HTTP/HTTPS 地址，不能使用本地文件、`127.0.0.1`、局域网 IP 或 Docker 内部服务名。
@@ -94,12 +94,12 @@ npm run build
 
 ## 订阅地址与缓存说明
 
-主地址使用 ghfast 加速 Raw，新提交会立即生效。jsDelivr 的 `@main` 地址有缓存延迟，只作为备用。
+主地址使用 gh-proxy 加速 Raw，新提交会立即生效。jsDelivr 的 `@main` 地址有缓存延迟，只作为备用。
 
 ## 备用订阅地址
 
 ```text
-https://gh-proxy.com/https://raw.githubusercontent.com/xbdba/libretv-source/main/dist/libretv-sources.json
+https://ghproxy.net/https://raw.githubusercontent.com/xbdba/libretv-source/main/dist/libretv-sources.json
 https://raw.githubusercontent.com/xbdba/libretv-source/main/dist/libretv-sources.json
 https://fastly.jsdelivr.net/gh/xbdba/libretv-source@main/dist/libretv-sources.json
 ```
