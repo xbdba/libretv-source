@@ -8,11 +8,28 @@
       "url": "https://bfzy2.tv/api.php/provide/vod"
     },
     {
+      "name": "如意资源",
+      "url": "https://cj.rycjapi.com/api.php/provide/vod"
+    },
+    {
+      "name": "非凡直连",
+      "url": "https://cj.ffzyapi.com/api.php/provide/vod"
+    },
+    {
       "name": "虎牙资源",
       "url": "https://www.huyaapi.com/api.php/provide/vod"
+    },
+    {
+      "name": "电影天堂资源",
+      "url": "https://caiji.dyttzyapi.com/api.php/provide/vod"
     }
   ],
   "liveSources": [
+    {
+      "name": "Guovin 聚合",
+      "url": "https://raw.githubusercontent.com/Guovin/iptv-api/gd/output/result.m3u",
+      "epg": "http://epg.51zmt.top:8000/e.xml.gz"
+    },
     {
       "name": "IPTV-org 中国",
       "url": "https://iptv-org.github.io/iptv/countries/cn.m3u",
@@ -41,8 +58,8 @@
       "live": 4
     },
     "selected": {
-      "vod": 2,
-      "live": 3
+      "vod": 5,
+      "live": 4
     },
     "testKeywords": [
       "繁花",
