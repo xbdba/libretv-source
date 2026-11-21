@@ -1,0 +1,55 @@
+name: Update LibreTV sources
+
+on:
+  schedule:
+    - cron: '17 19 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-libretv-sources
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Test parser
+        run: npm test
+
+      - name: Build and probe sources
+        run: npm run build
+
+      - name: Validate generated subscription
+        run: |
+          node --input-type=module -e "
+            import fs from 'node:fs';
+            const data = JSON.parse(fs.readFileSync('dist/libretv-sources.json', 'utf8'));
+            if (data.version !== 2) throw new Error('version must be 2');
+            if (!Array.isArray(data.sources) || data.sources.length < 8) throw new Error('not enough vod sources');
+            if (!Array.isArray(data.liveSources)) throw new Error('liveSources must be an array');
+            console.log('vod=' + data.sources.length + ' live=' + data.liveSources.length);
+          "
+
+      - name: Commit updated file
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add dist/libretv-sources.json
+          if git diff --cached --quiet; then
+            echo 'No change'
+            exit 0
+          fi
+          git commit -m "chore: update LibreTV sources $(date -u +%F)"
+          git push

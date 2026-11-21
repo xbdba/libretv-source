@@ -1,0 +1,12 @@
+services:
+  libretv:
+    image: ghcr.io/librespark/libretv:latest
+    container_name: libretv
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      PASSWORD: ${PASSWORD:?请先设置 PASSWORD}
+      # 当前订阅指向 xbdba/libretv-source；如果 fork 了本项目，再改成你的仓库。
+      # 这是每天的订阅地址；LibreTV 会自动拉取最新文件，不需要重建容器。
+      DEFAULT_SUBSCRIPTIONS: '[{"url":"https://cdn.jsdelivr.net/gh/xbdba/libretv-source@main/dist/libretv-sources.json","name":"自动维护源","refreshDays":1}]'
