@@ -16,10 +16,6 @@
       "url": "https://cj.ffzyapi.com/api.php/provide/vod"
     },
     {
-      "name": "虎牙资源",
-      "url": "https://www.huyaapi.com/api.php/provide/vod"
-    },
-    {
       "name": "电影天堂资源",
       "url": "https://caiji.dyttzyapi.com/api.php/provide/vod"
     }
@@ -58,7 +54,7 @@
       "live": 4
     },
     "selected": {
-      "vod": 5,
+      "vod": 4,
       "live": 4
     },
     "testKeywords": [
