@@ -12,7 +12,6 @@
   "minLiveSources": 2,
   "maxLiveSources": 6,
   "concurrency": 5,
-  "upstreamTimeoutMs": 20000,
   "probeTimeoutMs": 12000,
   "probeRetries": 1,
   "liveTimeoutMs": 30000,
